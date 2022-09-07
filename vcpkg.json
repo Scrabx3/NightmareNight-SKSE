@@ -5,7 +5,8 @@
   "dependencies": [
     "boost-stl-interfaces",
     "rsm-binary-io",
-    "spdlog"
+    "spdlog",
+    "commonlibsse-ng-flatrim"
   ],
   "builtin-baseline": "c06dfc0ac2649834da8b9f3092b907fb037accab",
   "overrides": [

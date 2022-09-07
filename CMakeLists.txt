@@ -8,7 +8,7 @@ option(BUILD_AE "Build with Skyrim AE Configuration" OFF)
 
 # ---- Project ----
 project(
-    RedLight
+    NightmareNight
     VERSION 0.0.1
     LANGUAGES CXX
 )
@@ -48,13 +48,10 @@ set_from_environment(Skyrim64Path)
 # set_from_environment(CommonLibSSEPath)
 
 # ---- Dependencies ----
-add_subdirectory("./lib" CommonLibSSE)
+# add_subdirectory("./lib" CommonLibSSE)
 
 find_package(spdlog REQUIRED CONFIG)
-find_package(nlohmann_json CONFIG REQUIRED)
-
-# find_package(yaml-cpp REQUIRED)
-find_package(magic_enum REQUIRED)
+find_package(CommonLibSSE CONFIG REQUIRED)
 
 # ---- Add source files ----
 include(CMake/source-list.cmake)
@@ -70,12 +67,6 @@ source_group(
 )
 
 # ---- Create DLL ----
-if(BUILD_AE)
-    add_compile_definitions(
-        SKYRIM_SUPPORT_AE
-    )
-endif()
-
 add_library(
     "${PROJECT_NAME}"
     SHARED
@@ -129,7 +120,6 @@ target_link_libraries(
     PUBLIC
     CommonLibSSE::CommonLibSSE
     spdlog::spdlog
-    nlohmann_json::nlohmann_json
 )
 
 target_precompile_headers("${PROJECT_NAME}"

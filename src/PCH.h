@@ -17,6 +17,10 @@
 #endif
 #pragma warning(pop)
 
+// #include "Random.h"
+// #include "Script.h"
+#include "Singleton.h"
+
 namespace logger = SKSE::log;
 namespace fs = std::filesystem;
 using namespace std::literals;
@@ -25,7 +29,6 @@ namespace stl
 {
 	using namespace SKSE::stl;
 
-#ifdef IS_PRE_AE
 	constexpr std::uint32_t version_pack(REL::Version a_version) noexcept
 	{
 		return static_cast<std::uint32_t>(
@@ -34,7 +37,13 @@ namespace stl
 			(a_version[2] & 0xFFF) << 4u |
 			(a_version[3] & 0x00F) << 0u);
 	}
-#endif
+
+	template <class F, class T>
+	void write_vfunc()
+	{
+		REL::Relocation<std::uintptr_t> vtbl{ F::VTABLE[0] };
+		T::func = vtbl.write_vfunc(T::size, T::thunk);
+	}
 }
 
 #define DLLEXPORT __declspec(dllexport)
