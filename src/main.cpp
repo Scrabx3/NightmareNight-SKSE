@@ -1,91 +1,76 @@
-#include "Frenzy.h"
-
 namespace NightmareNight
 {
-	enum class FrenzyStatus
+	struct Update
 	{
-		Inactive,
-		Transformed,
-		Frenzied
-	};
-
-	struct Frenzy :
-		Singleton<Frenzy>
-	{
-	private:
-		static inline FrenzyStatus status;
-		static inline std::mutex _m;
-
-		static std::optional<float> GetRemainingDuration()
+		static void thunk(RE::ActorValueMeter& meter)
 		{
-			static const auto BloodFrenzy = RE::TESDataHandler::GetSingleton()->LookupForm<RE::EffectSetting>(0x9EC, "NightmareNight.esp"sv);
-			const auto player = RE::PlayerCharacter::GetSingleton();
-			const auto list = player->GetActiveEffectList();
-			if (list) {
-				for (auto& effect : *list) {
-					if (const auto base = effect->GetBaseObject(); !base || base != BloodFrenzy)
-						continue;
-					else if (effect->flags.any(RE::ActiveEffect::Flag::kDispelled, RE::ActiveEffect::Flag::kInactive))
-						break;
-					return (effect->duration - effect->elapsedSeconds) / effect->duration;
-				}
-			}
-			return std::nullopt;
-		}
-
-	public:
-		static void thunk(RE::HUDChargeMeter* a_meter)
-		{
-			switch (status) {
-			case FrenzyStatus::Inactive:
-				return func(a_meter);
-			case FrenzyStatus::Transformed:
-				a_meter->root.Invoke("FadeOutChargeMeters");
-				break;
-			case FrenzyStatus::Frenzied:
-				{
-					std::scoped_lock lock(_m);
-					auto percent = GetRemainingDuration();
-					if (!percent && status == FrenzyStatus::Frenzied) {
-						status = FrenzyStatus::Transformed;
-						break;
+			if (meter.actorValue == RE::ActorValue::kMagicka && IsTransformed()) {
+				const auto pct = GetFrenzyPct();
+				if (!pct) {
+					// Set Magicka Meter to 0 on first tick after transformation
+					if (!_transformed) {
+						_transformed = true;
+						SetMeterPct(meter, 0);
 					}
-					std::array<RE::GFxValue, 4> array{ *percent, true, true, true };
-					a_meter->root.Invoke("SetChargeMeterPercent", nullptr, array);
+					return;
+				} else if (auto alpha = meter.view->GetVariableDouble(MagicaAlpha); alpha < 100) {
+					meter.view->SetVariableDouble(MagicaAlpha, 100);
 				}
-				break;
+				SetMeterPct(meter, *pct);
+				return;
+			} else if (_transformed) {
+				_transformed = false;
 			}
+			return func(meter);
 		}
+
 		static inline REL::Relocation<decltype(thunk)> func;
 		static inline constexpr std::size_t size = 0x1;
 
-		static void SetStatus(RE::StaticFunctionTag*, int32_t a_status)
+	private:
+		static constexpr const char* MagicaAlpha{ "_root.HUDMovieBaseInstance.Magica._alpha" };
+
+		static inline bool _transformed = false;
+
+		static void SetMeterPct(RE::ActorValueMeter& meter, double percent)
 		{
-			std::scoped_lock lock(_m);
-			status = FrenzyStatus(a_status);
+			std::array<RE::GFxValue, 2> args{ percent, false };
+			meter.root.Invoke(meter.setPctName.c_str(), nullptr, args);
+		}
+
+		static bool IsTransformed()
+		{
+			static const auto werebeast = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x8F2, "NightmareNight.esp"sv);
+			static const auto requiem = RE::TESDataHandler::GetSingleton()->LookupForm<RE::EffectSetting>(0x909, "NightmareNight.esp"sv);
+			const auto player = RE::PlayerCharacter::GetSingleton();
+			return player->HasKeyword(werebeast) || player->AsMagicTarget()->HasMagicEffect(requiem);
+		}
+
+		static std::optional<float> GetFrenzyPct()
+		{
+			static const auto bloodfrenzy = RE::TESDataHandler::GetSingleton()->LookupForm<RE::EffectSetting>(0x9EC, "NightmareNight.esp"sv);
+			const auto player = RE::PlayerCharacter::GetSingleton();
+			const auto effects = player->AsMagicTarget()->GetActiveEffectList();
+			if (!effects)
+				return std::nullopt;
+			for (auto& e : *effects) {
+				if (!e || e->GetBaseObject() != bloodfrenzy)
+					continue;
+				else if (e->flags.any(RE::ActiveEffect::Flag::kDispelled, RE::ActiveEffect::Flag::kInactive))
+					continue;
+				const float dur = e->duration - e->elapsedSeconds;
+				return (dur / e->duration) * 100.0f;
+			}
+			return std::nullopt;
 		}
 	};
 
-	inline bool Register(RE::BSScript::IVirtualMachine* a_vm)
+	inline void Install()
 	{
-		a_vm->RegisterFunction("SetStatus"sv, "NNFrenzyController", Frenzy::SetStatus);
-		stl::write_vfunc<RE::HUDChargeMeter, Frenzy>();
-		return true;
+		stl::write_vfunc<RE::ActorValueMeter, Update>();
 	}
-}  // namespace NightmareNight
+}
 
-// static void SKSEMessageHandler(SKSE::MessagingInterface::Message* message)
-// {
-// 	switch (message->type) {
-// 	case SKSE::MessagingInterface::kSaveGame:
-// 		break;
-// 	case SKSE::MessagingInterface::kDataLoaded:
-// 		break;
-// 	case SKSE::MessagingInterface::kNewGame:
-// 	case SKSE::MessagingInterface::kPostLoadGame:
-// 		break;
-// 	}
-// }
 
 extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	SKSE::PluginVersionData v;
@@ -93,6 +78,8 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	v.PluginName(Plugin::NAME);
 	v.AuthorName("Scrab Joséline"sv);
 	v.UsesAddressLibrary(true);
+	v.UsesStructsPost629(true);
+	v.CompatibleVersions({ SKSE::RUNTIME_SSE_LATEST_AE });
 	return v;
 }();
 
@@ -136,8 +123,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	SKSE::Init(a_skse);
 	logger::info("{} loaded"sv, Plugin::NAME);
 
-	const auto papyrus = SKSE::GetPapyrusInterface();
-	papyrus->Register(NightmareNight::Register);
+	NightmareNight::Install();
 
 	logger::info("Initialization complete");
 

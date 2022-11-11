@@ -18,8 +18,7 @@
 #pragma warning(pop)
 
 // #include "Random.h"
-// #include "Script.h"
-#include "Singleton.h"
+// #include "Singleton.h"
 
 namespace logger = SKSE::log;
 namespace fs = std::filesystem;

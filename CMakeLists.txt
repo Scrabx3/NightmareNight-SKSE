@@ -49,6 +49,9 @@ set_from_environment(Skyrim64Path)
 
 # ---- Dependencies ----
 # add_subdirectory("./lib" CommonLibSSE)
+# add_compile_definitions(
+#     SKYRIM_SUPPORT_AE
+# )
 
 find_package(spdlog REQUIRED CONFIG)
 find_package(CommonLibSSE CONFIG REQUIRED)

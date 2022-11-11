@@ -6,7 +6,7 @@
     "boost-stl-interfaces",
     "rsm-binary-io",
     "spdlog",
-    "commonlibsse-ng-flatrim"
+    "commonlibsse-ng"
   ],
   "builtin-baseline": "c06dfc0ac2649834da8b9f3092b907fb037accab",
   "overrides": [
