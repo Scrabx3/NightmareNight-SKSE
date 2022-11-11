@@ -4,7 +4,10 @@ namespace NightmareNight
 	{
 		static void thunk(RE::ActorValueMeter& meter)
 		{
-			if (meter.actorValue == RE::ActorValue::kMagicka && IsTransformed()) {
+			if (meter.actorValue != RE::ActorValue::kMagicka)
+				return func(meter);
+
+			if (IsTransformed()) {
 				const auto pct = GetFrenzyPct();
 				if (!pct) {
 					// Set Magicka Meter to 0 on first tick after transformation
@@ -18,7 +21,7 @@ namespace NightmareNight
 				}
 				SetMeterPct(meter, *pct);
 				return;
-			} else if (_transformed) {
+			} else {
 				_transformed = false;
 			}
 			return func(meter);
@@ -30,7 +33,7 @@ namespace NightmareNight
 	private:
 		static constexpr const char* MagicaAlpha{ "_root.HUDMovieBaseInstance.Magica._alpha" };
 
-		static inline bool _transformed = false;
+		static inline bool _transformed{ false };
 
 		static void SetMeterPct(RE::ActorValueMeter& meter, double percent)
 		{
@@ -48,7 +51,7 @@ namespace NightmareNight
 
 		static std::optional<float> GetFrenzyPct()
 		{
-			static const auto bloodfrenzy = RE::TESDataHandler::GetSingleton()->LookupForm<RE::EffectSetting>(0x9EC, "NightmareNight.esp"sv);
+			static const auto bloodfrenzy = RE::TESDataHandler::GetSingleton()->LookupForm<RE::EffectSetting>(0x897, "NightmareNight.esp"sv);
 			const auto player = RE::PlayerCharacter::GetSingleton();
 			const auto effects = player->AsMagicTarget()->GetActiveEffectList();
 			if (!effects)
