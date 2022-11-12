@@ -1,3 +1,5 @@
+#include "FrenzyMenu.h"
+
 namespace NightmareNight
 {
 	struct Update
@@ -14,15 +16,25 @@ namespace NightmareNight
 					if (!_transformed) {
 						_transformed = true;
 						SetMeterPct(meter, 0);
+					} else if (_frenzied) {
+						_frenzied = false;
+						// meter.root.Invoke("StartMagickaMeterBlinking"); Not sure why this doesnt work :<
+						FrenzyMenu::Hide();
 					}
 					return;
 				} else if (auto alpha = meter.view->GetVariableDouble(MagicaAlpha); alpha < 100) {
 					meter.view->SetVariableDouble(MagicaAlpha, 100);
 				}
+				if (!_frenzied) {
+					_frenzied = true;
+					FrenzyMenu::Show();
+				}
 				SetMeterPct(meter, *pct);
 				return;
 			} else {
+				_frenzied = false;
 				_transformed = false;
+				FrenzyMenu::ForceHide();
 			}
 			return func(meter);
 		}
@@ -32,8 +44,8 @@ namespace NightmareNight
 
 	private:
 		static constexpr const char* MagicaAlpha{ "_root.HUDMovieBaseInstance.Magica._alpha" };
-
 		static inline bool _transformed{ false };
+		static inline bool _frenzied{ false };
 
 		static void SetMeterPct(RE::ActorValueMeter& meter, double percent)
 		{
@@ -41,7 +53,7 @@ namespace NightmareNight
 			meter.root.Invoke(meter.setPctName.c_str(), nullptr, args);
 		}
 
-		static bool IsTransformed()
+		static inline bool IsTransformed()
 		{
 			static const auto werebeast = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x8F2, "NightmareNight.esp"sv);
 			static const auto requiem = RE::TESDataHandler::GetSingleton()->LookupForm<RE::EffectSetting>(0x909, "NightmareNight.esp"sv);
@@ -127,6 +139,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	logger::info("{} loaded"sv, Plugin::NAME);
 
 	NightmareNight::Install();
+	NightmareNight::FrenzyMenu::Register();
 
 	logger::info("Initialization complete");
 
