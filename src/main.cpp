@@ -32,7 +32,7 @@ namespace NightmareNight
 				}
 				SetMeterPct(meter, *pct);
 				return;
-			} else {
+			} else if (_transformed) {
 				_frenzied = false;
 				_transformed = false;
 				FrenzyMenu::ForceHide();

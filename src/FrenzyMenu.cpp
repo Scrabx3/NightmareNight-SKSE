@@ -48,6 +48,9 @@ namespace NightmareNight
 
 	void FrenzyMenu::FadeIn()
 	{
+		if (!IsOpen())
+			Show();
+
 		SKSE::GetTaskInterface()->AddUITask([]() {
 			const auto menu = RE::UI::GetSingleton()->GetMenu(NAME);
 			if (!menu) {
@@ -68,7 +71,9 @@ namespace NightmareNight
 			}
 			const auto _menu = static_cast<FrenzyMenu*>(menu.get());
 			const RE::GFxValue args{ false };
+			const RE::GFxValue argspct{ 0 };
 			_menu->uiMovie->Invoke("_root.main.hide", nullptr, &args, 1);
+			_menu->uiMovie->Invoke("_root.main.updateMeterPercent", nullptr, &argspct, 1);
 			_menu->FrenzyLevel->value = 0.0f;
 			_menu->CurrentLevel = 0;
 		});
