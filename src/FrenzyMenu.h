@@ -23,6 +23,9 @@ namespace NightmareNight
 		static void ForceHide() { RE::UIMessageQueue::GetSingleton()->AddMessage(NAME, RE::UI_MESSAGE_TYPE::kForceHide, nullptr); }
 		static bool IsOpen() { return RE::UI::GetSingleton()->IsMenuOpen(NAME); }
 
+		static void FadeIn();
+		static void FadeOut();
+
 	protected:
 		// IMenu
 		RE::UI_MESSAGE_RESULTS ProcessMessage(RE::UIMessage& a_message) override;

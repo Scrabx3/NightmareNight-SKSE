@@ -29,22 +29,11 @@ namespace NightmareNight
 		using Result = RE::UI_MESSAGE_RESULTS;
 
 		switch (*a_message.type) {
-		case Type::kShow:
-			{
-				const RE::GFxValue args{ 0 };
-				this->uiMovie->Invoke("_root.main.setMeterPercent", nullptr, &args, 1);
-				this->uiMovie->Invoke("_root.main.show", nullptr, nullptr, 0);
-			}
-			return Result::kHandled;
-		case Type::kForceHide:
-		case Type::kHide:
-			{
-				const RE::GFxValue args{ *a_message.type == Type::kForceHide };
-				this->uiMovie->Invoke("_root.main.hide", nullptr, &args, 1);
-				FrenzyLevel->value = 0.0f;
-				CurrentLevel = 0;
-			}
-			return Result::kHandled;
+		// case Type::kShow:
+		//	return Result::kHandled;
+		// case Type::kForceHide:
+		// case Type::kHide:
+		// 	return Result::kHandled;
 		case Type::kUpdate:
 			if (FrenzyLevel->value != CurrentLevel) {
 				CurrentLevel = FrenzyLevel->value;
@@ -56,5 +45,34 @@ namespace NightmareNight
 			return RE::IMenu::ProcessMessage(a_message);
 		}
 	}
+
+	void FrenzyMenu::FadeIn()
+	{
+		SKSE::GetTaskInterface()->AddUITask([]() {
+			const auto menu = RE::UI::GetSingleton()->GetMenu(NAME);
+			if (!menu) {
+				logger::error("Unable to retrieve Frenzy Menu");
+				return;
+			}
+			menu->uiMovie->Invoke("_root.main.show", nullptr, nullptr, 0);
+		});
+	}
+
+	void FrenzyMenu::FadeOut()
+	{
+		SKSE::GetTaskInterface()->AddUITask([]() {
+			const auto menu = RE::UI::GetSingleton()->GetMenu(NAME);
+			if (!menu) {
+				logger::error("Unable to retrieve Frenzy Menu");
+				return;
+			}
+			const auto _menu = static_cast<FrenzyMenu*>(menu.get());
+			const RE::GFxValue args{ false };
+			_menu->uiMovie->Invoke("_root.main.hide", nullptr, &args, 1);
+			_menu->FrenzyLevel->value = 0.0f;
+			_menu->CurrentLevel = 0;
+		});
+	}
+
 
 } // namespace NightmareNight

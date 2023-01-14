@@ -44,6 +44,7 @@
         "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /WX"
       },
       "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/vs2022",
       "inherits": [
         "cmake-dev",
         "vcpkg",
@@ -51,62 +52,22 @@
       ],
       "name": "vs2022-windows-vcpkg",
       "toolset": "v143",
-      "hidden": true
-    },
-    {
-      "cacheVariables": {
-        "SKYRIM_SUPPORT_AE": {
-          "type": "BOOL",
-          "value": "OFF"
-        }
-      },
-      "binaryDir": "${sourceDir}/build/vs2022-SE",
-      "inherits": [
-        "vs2022-windows-vcpkg"
-      ],
-      "name": "vs2022-windows-vcpkg-se"
-    },
-    {
-      "cacheVariables": {
-        "SKYRIM_SUPPORT_AE": {
-          "type": "BOOL",
-          "value": "ON"
-        }
-      },
-      "binaryDir": "${sourceDir}/build/vs2022-AE",
-      "inherits": [
-        "vs2022-windows-vcpkg"
-      ],
-      "name": "vs2022-windows-vcpkg-ae"
+      "hidden": false
     }
   ],
   "buildPresets": [
     {
-      "name": "vs2022-windows-vcpkg-se-Release",
+      "name": "vs2022-windows-vcpkg-Release",
       "description": "",
       "displayName": "",
-      "configurePreset": "vs2022-windows-vcpkg-se",
+      "configurePreset": "vs2022-windows-vcpkg",
       "configuration": "Release"
     },
     {
-      "name": "vs2022-windows-vcpkg-se-Debug",
+      "name": "vs2022-windows-vcpkg-Debug",
       "description": "",
       "displayName": "",
-      "configurePreset": "vs2022-windows-vcpkg-se",
-      "configuration": "Debug"
-    },
-    {
-      "name": "vs2022-windows-vcpkg-ae-Release",
-      "description": "",
-      "displayName": "",
-      "configurePreset": "vs2022-windows-vcpkg-ae",
-      "configuration": "Release"
-    },
-    {
-      "name": "vs2022-windows-vcpkg-ae-Debug",
-      "description": "",
-      "displayName": "",
-      "configurePreset": "vs2022-windows-vcpkg-ae",
+      "configurePreset": "vs2022-windows-vcpkg",
       "configuration": "Debug"
     }
   ],

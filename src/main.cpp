@@ -16,10 +16,11 @@ namespace NightmareNight
 					if (!_transformed) {
 						_transformed = true;
 						SetMeterPct(meter, 0);
+						FrenzyMenu::Show();
 					} else if (_frenzied) {
 						_frenzied = false;
-						// meter.root.Invoke("StartMagickaMeterBlinking"); Not sure why this doesnt work :<
-						FrenzyMenu::Hide();
+						meter.root.Invoke(meter.setBlinkingName.c_str());
+						FrenzyMenu::FadeOut();
 					}
 					return;
 				} else if (auto alpha = meter.view->GetVariableDouble(MagicaAlpha); alpha < 100) {
@@ -27,7 +28,7 @@ namespace NightmareNight
 				}
 				if (!_frenzied) {
 					_frenzied = true;
-					FrenzyMenu::Show();
+					FrenzyMenu::FadeIn();
 				}
 				SetMeterPct(meter, *pct);
 				return;
@@ -86,7 +87,6 @@ namespace NightmareNight
 	}
 }
 
-
 extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	SKSE::PluginVersionData v;
 	v.PluginVersion(Plugin::VERSION);
@@ -94,7 +94,7 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	v.AuthorName("Scrab Joséline"sv);
 	v.UsesAddressLibrary(true);
 	v.UsesStructsPost629(true);
-	v.CompatibleVersions({ SKSE::RUNTIME_SSE_LATEST_AE });
+	v.CompatibleVersions({ SKSE::RUNTIME_LATEST_VR, SKSE::RUNTIME_SSE_LATEST_SE, SKSE::RUNTIME_SSE_LATEST });
 	return v;
 }();
 
