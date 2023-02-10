@@ -18,8 +18,7 @@ namespace NightmareNight
 		});
 		assert(success);
 
-		auto view = this->uiMovie;
-		view->SetMouseCursorCount(0);
+		this->uiMovie->SetMouseCursorCount(0);
 	}
 
 	RE::UI_MESSAGE_RESULTS FrenzyMenu::ProcessMessage(RE::UIMessage& a_message)
@@ -28,9 +27,18 @@ namespace NightmareNight
 		using Type = RE::UI_MESSAGE_TYPE;
 		using Result = RE::UI_MESSAGE_RESULTS;
 
+		const auto update_coords = [&]() {
+			const std::array args{
+				RE::GFxValue{ coords._x },
+				RE::GFxValue{ coords._y }
+			};
+			this->uiMovie->Invoke("_root.main.setLocation", nullptr, args.data(), static_cast<uint32_t>(args.size()));
+		};
+
 		switch (*a_message.type) {
-		// case Type::kShow:
-		//	return Result::kHandled;
+		case Type::kShow:
+			update_coords();
+			return Result::kHandled;
 		// case Type::kForceHide:
 		// case Type::kHide:
 		// 	return Result::kHandled;
@@ -39,6 +47,10 @@ namespace NightmareNight
 				CurrentLevel = FrenzyLevel->value;
 				const RE::GFxValue args{ (CurrentLevel * 10) };
 				this->uiMovie->Invoke("_root.main.updateMeterPercent", nullptr, &args, 1);
+			}
+			if (coords != menucoords) {
+				coords = menucoords;
+				update_coords();
 			}
 			return Result::kHandled;
 		default:
@@ -78,6 +90,5 @@ namespace NightmareNight
 			_menu->CurrentLevel = 0;
 		});
 	}
-
 
 } // namespace NightmareNight

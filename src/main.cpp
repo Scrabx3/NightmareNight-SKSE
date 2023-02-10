@@ -1,4 +1,5 @@
 #include "FrenzyMenu.h"
+#include "Serialize.h"
 
 namespace NightmareNight
 {
@@ -95,6 +96,9 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	v.UsesAddressLibrary(true);
 	v.UsesStructsPost629(true);
 	v.CompatibleVersions({ SKSE::RUNTIME_SSE_LATEST_SE, SKSE::RUNTIME_SSE_LATEST });
+
+	// v.UsesStructsPost629(false);
+	// v.CompatibleVersions({ SKSE::RUNTIME_SSE_1_6_353 });
 	return v;
 }();
 
@@ -140,6 +144,16 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	NightmareNight::Install();
 	NightmareNight::FrenzyMenu::Register();
+
+	const auto papyrus = SKSE::GetPapyrusInterface();
+	papyrus->Register(NightmareNight::Papyrus::Register);
+
+	const auto serialization = SKSE::GetSerializationInterface();
+	serialization->SetUniqueID('YKud');
+	serialization->SetSaveCallback(Serialization::Serialize::SaveCallback);
+	serialization->SetLoadCallback(Serialization::Serialize::LoadCallback);
+	// serialization->SetRevertCallback(Serialization::Serialize::RevertCallback);
+	// serialization->SetFormDeleteCallback(Serialization::Serialize::FormDeleteCallback);
 
 	logger::info("Initialization complete");
 

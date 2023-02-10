@@ -4,4 +4,6 @@ set(CXX_FILES
 
 	src/FrenzyMenu.h
 	src/FrenzyMenu.cpp
+	src/Serialize.h
+	src/Serialize.cpp
 )

@@ -2,6 +2,42 @@
 
 namespace NightmareNight
 {
+	struct Coordinate
+	{
+		float _x = 0.70f;
+		float _y = 0.82f;
+
+		bool operator==(Coordinate& a_rhs) { return a_rhs._x == _x && a_rhs._y == _y; }
+		Coordinate& operator=(Coordinate& a_rhs)
+		{
+			_x = a_rhs._x;
+			_y = a_rhs._y;
+			return *this;
+		}
+	};
+	inline static Coordinate menucoords{};
+
+	namespace Papyrus
+	{
+#define REGISTERFUNC(func, c) a_vm->RegisterFunction(#func##sv, c, func)
+
+		using VM = RE::BSScript::IVirtualMachine;
+		using StackID = RE::VMStackID;
+
+		inline void SetX(RE::StaticFunctionTag*, float x) { menucoords._x = x; }
+		inline void SetY(RE::StaticFunctionTag*, float y) { menucoords._y = y; }
+		inline std::vector<float> GetCoordinates(RE::StaticFunctionTag*) { return { menucoords._x, menucoords._y }; }
+
+		inline bool Register(VM* a_vm)
+		{
+			REGISTERFUNC(SetX, "NNMCM");
+			REGISTERFUNC(SetY, "NNMCM");
+			REGISTERFUNC(GetCoordinates, "NNMCM");
+
+			return true;
+		}
+	}
+
   class FrenzyMenu :
     public RE::IMenu
   {
@@ -33,6 +69,8 @@ namespace NightmareNight
   private:
 	  RE::TESGlobal* const FrenzyLevel{ RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(0x87E, "NightmareNight.esp"sv) };
 	  float CurrentLevel{ 0.0f };
+
+	  Coordinate coords{ menucoords };
   };
 
 	template <typename T>
