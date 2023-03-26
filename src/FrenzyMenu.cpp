@@ -29,10 +29,12 @@ namespace NightmareNight
 
 		const auto update_coords = [&]() {
 			const std::array args{
-				RE::GFxValue{ coords._x },
-				RE::GFxValue{ coords._y }
+				RE::GFxValue{ MenuCoordinates._x },
+				RE::GFxValue{ MenuCoordinates._y }
 			};
-			this->uiMovie->Invoke("_root.main.setLocation", nullptr, args.data(), static_cast<uint32_t>(args.size()));
+			[[maybe_unused]] bool success;
+			success = this->uiMovie->Invoke("_root.frenzy.setLocation", nullptr, args.data(), static_cast<uint32_t>(args.size()));
+			assert(success);
 		};
 
 		switch (*a_message.type) {
@@ -46,10 +48,10 @@ namespace NightmareNight
 			if (FrenzyLevel->value != CurrentLevel) {
 				CurrentLevel = FrenzyLevel->value;
 				const RE::GFxValue args{ (CurrentLevel * 10) };
-				this->uiMovie->Invoke("_root.main.updateMeterPercent", nullptr, &args, 1);
+				this->uiMovie->Invoke("_root.frenzy.updateMeterPercent", nullptr, &args, 1);
 			}
-			if (coords != menucoords) {
-				coords = menucoords;
+			if (CurrentCoordinates != MenuCoordinates) {
+				CurrentCoordinates = MenuCoordinates;
 				update_coords();
 			}
 			return Result::kHandled;
@@ -69,7 +71,7 @@ namespace NightmareNight
 				logger::error("Unable to retrieve Frenzy Menu");
 				return;
 			}
-			menu->uiMovie->Invoke("_root.main.show", nullptr, nullptr, 0);
+			menu->uiMovie->Invoke("_root.frenzy.show", nullptr, nullptr, 0);
 		});
 	}
 
@@ -84,8 +86,8 @@ namespace NightmareNight
 			const auto _menu = static_cast<FrenzyMenu*>(menu.get());
 			const RE::GFxValue args{ false };
 			const RE::GFxValue argspct{ 0 };
-			_menu->uiMovie->Invoke("_root.main.hide", nullptr, &args, 1);
-			_menu->uiMovie->Invoke("_root.main.updateMeterPercent", nullptr, &argspct, 1);
+			_menu->uiMovie->Invoke("_root.frenzy.hide", nullptr, &args, 1);
+			_menu->uiMovie->Invoke("_root.frenzy.updateMeterPercent", nullptr, &argspct, 1);
 			_menu->FrenzyLevel->value = 0.0f;
 			_menu->CurrentLevel = 0;
 		});

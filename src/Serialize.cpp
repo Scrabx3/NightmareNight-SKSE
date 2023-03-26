@@ -8,12 +8,12 @@ namespace Serialization
 	{
 		if (!a_intfc->OpenRecord(_MenuX, _Version))
 			logger::error("Failed to open record <_MenuX>"sv);
-		else if (!a_intfc->WriteRecordData(NightmareNight::menucoords._x))
+		else if (!a_intfc->WriteRecordData(NightmareNight::FrenzyMenu::MenuCoordinates._x))
 			logger::error("Failed to serialize record <_MenuX>"sv);
 
 		if (!a_intfc->OpenRecord(_MenuY, _Version))
 			logger::error("Failed to open record <_MenuY>"sv);
-		else if (!a_intfc->WriteRecordData(NightmareNight::menucoords._y))
+		else if (!a_intfc->WriteRecordData(NightmareNight::FrenzyMenu::MenuCoordinates._y))
 			logger::error("Failed to serialize record <_MenuY>"sv);
 	}
 
@@ -31,14 +31,14 @@ namespace Serialization
 			case _MenuX:
 				logger::info("Loading record <_MenuX>"sv);
 				if (float x; a_intfc->ReadRecordData(x))
-					NightmareNight::menucoords._x = x;
+					NightmareNight::FrenzyMenu::MenuCoordinates._x = x;
 				else
 					logger::error("Failed to read Record Data <_MenuX>"sv);
 				break;
 			case _MenuY:
 				logger::info("Loading record <_MenuY>"sv);
 				if (float y; a_intfc->ReadRecordData(y))
-					NightmareNight::menucoords._y = y;
+					NightmareNight::FrenzyMenu::MenuCoordinates._y = y;
           else
 						logger::error("Failed to read Record Data <_MenuY>"sv);
 				break;
