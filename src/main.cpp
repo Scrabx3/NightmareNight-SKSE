@@ -20,6 +20,7 @@ namespace NightmareNight
 						FrenzyMenu::Show();
 					} else if (_frenzied) {
 						_frenzied = false;
+						SetMeterPct(meter, 0);
 						meter.root.Invoke(meter.setBlinkingName.c_str());
 						FrenzyMenu::FadeOut();
 					}
