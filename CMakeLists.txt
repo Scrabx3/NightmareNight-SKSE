@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.22)
 
 set(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+option(BUILD_SKYRIMAE "Build for Skyrim AE" OFF)
+option(BUILD_SKYRIMVR "Build for Skyrim VR" OFF)
 
 # ---- Options ----
-option(COPY_OUTPUT "Copy Output into Skyrim Directory" OFF)
-option(BUILD_AE "Build with Skyrim AE Configuration" OFF)
+option(COPY_TO_PAPYRUS "Copy finished build to Papyrus SKSE Folder" ON)
+
+# Create a path variable "MODS_FOLDER", change "PAPYRUS_ROOT" to the papyrus dev folder
+# If option "COPY_TO_PAPYRUS", files will be copied to <Path>/PAPYRUS_ROOT/<version_folder>
+set(PAPYRUS_ROOT "Nightmare Night")
+set(PAPYRUS_SE "1597")
+set(PAPYRUS_AE "SKSE/Plugins")
+set(PAPYRUS_VR "14vr")
 
 # ---- Project ----
 project(
@@ -43,18 +51,40 @@ macro(set_from_environment VARIABLE)
     endif()
 endmacro()
 
-set_from_environment(Skyrim64Path)
+set_from_environment(VCPKG_ROOT)
+set_from_environment(MODS_FOLDER)
 
-# set_from_environment(CommonLibSSEPath)
+if(DEFINED VCPKG_ROOT)
+    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+    set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
+else()
+    message(WARNING "Variable VCPKG_ROOT is not set. Continuing without vcpkg.")
+endif()
 
 # ---- Dependencies ----
-# add_subdirectory("./lib" CommonLibSSE)
-# add_compile_definitions(
-#     SKYRIM_SUPPORT_AE
-# )
+if(BUILD_SKYRIMVR)
+    add_compile_definitions(SKYRIMVR)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    add_subdirectory("./lib/CommonLibVR" CommonLibSSE)
+    set(SkyrimPath ${MODS_FOLDER}/${PAPYRUS_ROOT}/${PAPYRUS_VR})
+    set(CommonLibName "CommonLibVR")
+    message("Building Skyrim VR")
+else()
+    if(BUILD_SKYRIMAE)
+        add_compile_definitions(SKYRIM_AE)
+        add_compile_definitions(SKYRIM_SUPPORT_AE)
+        set(SkyrimPath ${MODS_FOLDER}/${PAPYRUS_ROOT}/${PAPYRUS_AE})
+        message("Building Skyrim 1.6")
+    else()
+        set(SkyrimPath ${MODS_FOLDER}/${PAPYRUS_ROOT}/${PAPYRUS_SE})
+        message("Building Skyrim 1.5")
+    endif()
+
+    set(CommonLibName "CommonLibSSE")
+    add_subdirectory("./lib/CommonLibSSE" CommonLibSSE)
+endif()
 
 find_package(spdlog REQUIRED CONFIG)
-find_package(CommonLibSSE CONFIG REQUIRED)
 
 # ---- Add source files ----
 include(CMake/source-list.cmake)
@@ -83,7 +113,7 @@ add_library(
 target_compile_features(
     "${PROJECT_NAME}"
     PRIVATE
-    cxx_std_20
+    cxx_std_23
 )
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -121,7 +151,7 @@ target_include_directories(
 target_link_libraries(
     "${PROJECT_NAME}"
     PUBLIC
-    CommonLibSSE::CommonLibSSE
+    ${CommonLibName}::${CommonLibName}
     spdlog::spdlog
 )
 
@@ -130,17 +160,19 @@ target_precompile_headers("${PROJECT_NAME}"
     "src/PCH.h"
 )
 
-# ---- File copying ----
-if("${COPY_OUTPUT}")
-    if(DEFINED Skyrim64Path)
+# ---- Post build ----
+if(COPY_TO_PAPYRUS)
+    if(DEFINED SkyrimPath)
         add_custom_command(
-            TARGET "${PROJECT_NAME}"
+            TARGET ${PROJECT_NAME}
             POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E make_directory "${Skyrim64Path}/Data/SKSE/Plugins/"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${Skyrim64Path}/Data/SKSE/Plugins/"
-            VERBATIM
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${SkyrimPath}
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> ${SkyrimPath}
         )
     else()
-        message(WARNING "Variable Skyrim64Path is not defined. Skipping post-build copy command.")
+        message(
+            WARNING
+            "Variable ${SkyrimPath} is not defined. Skipping post-build copy command."
+        )
     endif()
 endif()

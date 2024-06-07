@@ -15,7 +15,7 @@
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": {
           "type": "STRING",
-          "value": "$env{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
         }
       },
       "hidden": true,
@@ -44,7 +44,6 @@
         "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /WX"
       },
       "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/build/vs2022",
       "inherits": [
         "cmake-dev",
         "vcpkg",
@@ -52,22 +51,63 @@
       ],
       "name": "vs2022-windows-vcpkg",
       "toolset": "v143",
-      "hidden": false
+      "hidden": true
+    },
+    {
+      "binaryDir": "${sourceDir}/build/vs2022-SE",
+      "inherits": [
+        "vs2022-windows-vcpkg"
+      ],
+      "name": "vs2022-windows-vcpkg-se"
+    },
+    {
+      "cacheVariables": {
+        "BUILD_SKYRIMAE": true
+      },
+      "binaryDir": "${sourceDir}/build/vs2022-AE",
+      "inherits": [
+        "vs2022-windows-vcpkg"
+      ],
+      "name": "vs2022-windows-vcpkg-ae"
+    },
+    {
+      "cacheVariables": {
+        "BUILD_SKYRIMVR": true
+      },
+      "binaryDir": "${sourceDir}/build/vs2022-VR",
+      "inherits": [
+        "vs2022-windows-vcpkg"
+      ],
+      "name": "vs2022-windows-vcpkg-vr"
     }
   ],
   "buildPresets": [
     {
-      "name": "vs2022-windows-vcpkg-Release",
+      "name": "vs2022-windows-vcpkg-se-Release",
       "description": "",
       "displayName": "",
-      "configurePreset": "vs2022-windows-vcpkg",
+      "configurePreset": "vs2022-windows-vcpkg-se",
       "configuration": "Release"
     },
     {
-      "name": "vs2022-windows-vcpkg-Debug",
+      "name": "vs2022-windows-vcpkg-ae-Release",
       "description": "",
       "displayName": "",
-      "configurePreset": "vs2022-windows-vcpkg",
+      "configurePreset": "vs2022-windows-vcpkg-ae",
+      "configuration": "Release"
+    },
+    {
+      "name": "vs2022-windows-vcpkg-vr-Release",
+      "description": "",
+      "displayName": "",
+      "configurePreset": "vs2022-windows-vcpkg-vr",
+      "configuration": "Release"
+    },
+    {
+      "name": "vs2022-windows-vcpkg-ae-Debug",
+      "description": "",
+      "displayName": "",
+      "configurePreset": "vs2022-windows-vcpkg-ae",
       "configuration": "Debug"
     }
   ],

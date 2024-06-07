@@ -61,14 +61,14 @@ namespace NightmareNight
 			static const auto werebeast = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x8F2, "NightmareNight.esp"sv);
 			static const auto requiem = RE::TESDataHandler::GetSingleton()->LookupForm<RE::EffectSetting>(0x909, "NightmareNight.esp"sv);
 			const auto player = RE::PlayerCharacter::GetSingleton();
-			return player->HasKeyword(werebeast) || player->AsMagicTarget()->HasMagicEffect(requiem);
+			return player->HasKeyword(werebeast) || player->HasMagicEffect(requiem);
 		}
 
 		static std::optional<float> GetFrenzyPct()
 		{
 			static const auto bloodfrenzy = RE::TESDataHandler::GetSingleton()->LookupForm<RE::EffectSetting>(0x897, "NightmareNight.esp"sv);
 			const auto player = RE::PlayerCharacter::GetSingleton();
-			const auto effects = player->AsMagicTarget()->GetActiveEffectList();
+			const auto effects = player->GetActiveEffectList();
 			if (!effects)
 				return std::nullopt;
 			for (auto& e : *effects) {
@@ -89,17 +89,18 @@ namespace NightmareNight
 	}
 }
 
+#ifdef SKYRIM_SUPPORT_AE
 extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	SKSE::PluginVersionData v;
 	v.PluginVersion(Plugin::VERSION);
 	v.PluginName(Plugin::NAME);
 	v.AuthorName("Scrab Joséline"sv);
-	v.UsesAddressLibrary(true);
-	v.UsesStructsPost629(true);
-	v.CompatibleVersions({ SKSE::RUNTIME_SSE_LATEST_SE, SKSE::RUNTIME_SSE_LATEST });
+	v.UsesAddressLibrary();
+	v.UsesUpdatedStructs();
+	v.CompatibleVersions({ SKSE::RUNTIME_LATEST });
 	return v;
 }();
-
+#else
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface*, SKSE::PluginInfo* a_info)
 {
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
@@ -107,6 +108,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface*, 
 	a_info->version = Plugin::VERSION.pack();
 	return true;
 }
+#endif
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {
@@ -121,24 +123,34 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 		auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
 #endif
 		auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
+#ifndef NDEBUG
 		log->set_level(spdlog::level::trace);
 		log->flush_on(spdlog::level::trace);
-
+#else
+		log->set_level(spdlog::level::info);
+		log->flush_on(spdlog::level::info);
+#endif
 		spdlog::set_default_logger(std::move(log));
-		spdlog::set_pattern("%s(%#): [%^%l%$] %v"s);
+#ifndef NDEBUG
+		spdlog::set_pattern("%s(%#): [%T] [%^%l%$] %v"s);
+#else
+		spdlog::set_pattern("[%T] [%^%l%$] %v"s);
+#endif
 
-		logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
+		logger::info("{} v{}", Plugin::NAME, Plugin::VERSION.string());
 		return true;
 	};
+
 	if (a_skse->IsEditor()) {
-		logger::critical("Loaded in editor, marking as incompatible"sv);
+		logger::critical("Loaded in editor, marking as incompatible");
 		return false;
 	} else if (!InitLogger()) {
+		logger::critical("Failed to initialize logger");
 		return false;
 	}
 
 	SKSE::Init(a_skse);
-	logger::info("{} loaded"sv, Plugin::NAME);
+	logger::info("{} loaded", Plugin::NAME);
 
 	NightmareNight::Install();
 	NightmareNight::FrenzyMenu::Register();
