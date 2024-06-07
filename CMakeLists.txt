@@ -9,7 +9,7 @@ option(BUILD_AE "Build with Skyrim AE Configuration" OFF)
 # ---- Project ----
 project(
     NightmareNight
-    VERSION 0.0.1
+    VERSION 2.1.1.1
     LANGUAGES CXX
 )
 
