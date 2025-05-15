@@ -62,6 +62,8 @@ namespace NightmareNight
 
 	void FrenzyMenu::FadeIn()
 	{
+		if (REL::Module::IsVR())
+			return;
 		if (!IsOpen())
 			Show();
 
@@ -77,6 +79,9 @@ namespace NightmareNight
 
 	void FrenzyMenu::FadeOut()
 	{
+		if (REL::Module::IsVR())
+			return;
+
 		SKSE::GetTaskInterface()->AddUITask([]() {
 			const auto menu = RE::UI::GetSingleton()->GetMenu(NAME);
 			if (!menu) {
