@@ -24,7 +24,7 @@ namespace Serialization
 		uint32_t length;
 		while (a_intfc->GetNextRecordInfo(type, version, length)) {
 			if (version != _Version) {
-				logger::warn("Invalid Version for loaded Data of Type = {}. Expected = {}; Got = {}", GetTypeName(type), _Version, version);
+				logger::warn("Invalid Version for loaded Data of Type = {}. Expected = {}; Got = {}", GetTypeName(type), std::to_underlying(_Version), version);
 				continue;
 			}
 			switch (type) {

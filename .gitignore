@@ -1,6 +1,4 @@
 .vs
 .vscode
-*.code-workspace
 build/
-/vcpkg_installed
-
+.xmake
