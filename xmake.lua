@@ -5,7 +5,7 @@ PROJECT_NAME = "NightmareNight"
 
 -- Project
 set_project(PROJECT_NAME)
-set_version("1.0.3")
+set_version("2.2.1")
 set_languages("cxx23")
 set_license("gplv3")
 set_warnings("allextra", "error")
